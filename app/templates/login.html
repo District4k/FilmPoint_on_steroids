@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card custom-card">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Login here!</h2>
+                        <form method="POST" class="form-group">
+                            {{ form.hidden_tag() }}
+
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control") }}
+                            </div>
+
+                            <button type="submit" class="btn-custom me-2 w-100 position-relative">
+                                <span class="position-absolute top-50 start-50 translate-middle">Login</span>
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-3">
+                            <br><a href="{{ url_for('main.register') }}">Don't have an account? Sign Up Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

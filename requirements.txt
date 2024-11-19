@@ -14,3 +14,6 @@ Flask-SQLAlchemy
 mysqlclient
 Flask-Migrate
 python-dotenv
+requests==2.31.0
+email-validator
+

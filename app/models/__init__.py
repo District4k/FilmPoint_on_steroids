@@ -1,7 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
+from .user import *
+from ..extensions import db
 
+# Initialize the database
 db = SQLAlchemy()
 
-# Import models here
-from .user import User
-from .post import Post
+
+

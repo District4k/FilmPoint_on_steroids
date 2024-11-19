@@ -2,24 +2,27 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div>
-    <div class="movie-container">
-        <div class="container mt-5">
-            <form method="POST">
-                <!-- CSRF token for security -->
-                {{ form.hidden_tag() }}
+    <div>
+        <div class="movie-container">
+            <div class="container mt-5">
+                <form method="POST">
+                    <!-- CSRF token for security -->
+                    {{ form.hidden_tag() }}
 
-                <h2>{{ question_title }}</h2>
-                {% for question in questions %}
-                <input type="hidden" name="question" value="{{ question.id }}">
-                <div class="d-grid gap-lg-2">
-                    <button class="btn btn-light btn-lg" type="submit" name="answer"
-                            value="{{ question.filter }}">{{ question }}
-                    </button>
-                </div>
-                {% endfor %}
-            </form>
+                    <h2>{{ question_title }}</h2>
+                    {% for question in questions %}
+                        <input type="hidden" name="question" value="{{ question.id }}">
+
+                        <!-- Adjust button value and display based on the question attributes -->
+                        <div class="d-grid gap-lg-2">
+                            <button class="btn btn-light btn-lg" type="submit" name="answer"
+                                    value="{{ question.filter }}">
+                                {{ question.text }}  <!-- Adjust according to how question text is stored -->
+                            </button>
+                        </div>
+                    {% endfor %}
+                </form>
+            </div>
         </div>
     </div>
-</div>
 {% endblock %}

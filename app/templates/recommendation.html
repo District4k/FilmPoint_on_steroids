@@ -10,23 +10,24 @@
 <div class="movie-container">
     <div class="movie-content">
         <div class="image-box">
-            <img src="https://image.tmdb.org/t/p/w500{{ movie.image }}" alt="{{ movie.name }}" class="movie-image">
+            <img src="https://image.tmdb.org/t/p/w500{{ movie.image }}" alt="{{ movie.name }} poster" class="movie-image">
         </div>
         <div class="description-box">
             <div class="movie-details">
                 <h2 class="movie-title">{{ movie.name }}</h2>
                 <div class="movie-year">Year: {{ movie.year }}</div>
                 <div class="movie-rating">Rating: {{ movie.rating }}</div>
-                <div class="movie-genre">Genres: {{ movie.genre }}</div>
+                <div class="movie-genre">Genres: {{ movie.genre | join(', ') }}</div>
                 <p class="movie-description">{{ movie.description }}</p>
 
                 <div class="buttons">
                     {% if movie.isWatchListed %}
-                    <img src="{{ url_for('static', filename='film-point/star.png') }}"
-                         style="width: 25px; height: 25px;" alt="Watchlisted"> Added to Watchlist
+                    <div>
+                        <img src="{{ url_for('static', filename='film-point/star.png') }}"
+                             style="width: 25px; height: 25px;" alt="Watchlisted"> Added to Watchlist
+                    </div>
                     {% else %}
-                    <form id="watchlistForm-{{ movie.movie_id }}" method="POST"
-                          action="{{ url_for('add_to_watchlist') }}">
+                    <form id="watchlistForm-{{ movie.movie_id }}" method="POST" action="{{ url_for('add_to_watchlist') }}">
                         {{ form.hidden_tag() }}
                         <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
                         <input type="hidden" name="movie_name" value="{{ movie.name }}">
