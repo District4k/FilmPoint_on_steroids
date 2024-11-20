@@ -1,12 +1,10 @@
 from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import check_password_hash
-from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, db
+from werkzeug.security import check_password_hash, generate_password_hash
+from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, db, User
 from .api import get_film_list_by_filter
-from .forms import RegisterForm, AuthenticationForm  # Import forms
+from .forms import RegisterForm, AuthenticationForm
 
-
-# Define the blueprint for 'main' routes
 main = Blueprint('main', __name__)
 
 
@@ -16,25 +14,77 @@ def index():
     return render_template('index.html')
 
 
-# Register Route
-@main.route('/register/', methods=['GET', 'POST'])
-def register():
-    form = RegisterForm(request.form)
-    if request.method == 'POST' and form.validate():
-        user = form.save()
-        login_user(user)
-        flash('Your account has been created!', 'success')
-        return redirect(url_for('main.index'))
-    flash('There was an error with your registration. Please try again.', 'error')
-    return render_template('signup.html', form=form)
-
-
-# Authentication function for login
 def authenticate(username, password):
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         return user
     return None
+
+
+@main.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+
+        if password != confirm_password:
+            flash('Passwords do not match')
+            return redirect(url_for('main.edit_profile'))
+
+        current_user.username = username
+        current_user.email = email
+
+        if password:
+            current_user.password = generate_password_hash(password)
+
+        db.session.commit()
+
+        flash('Your password was successfully updated!')
+        return redirect(url_for('main.profile'))
+    return render_template('edit_profile.html')
+
+
+# Register Route
+@main.route('/register/', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm(request.form)
+
+    if request.method == 'POST':
+        # Validate the form
+        if form.validate():
+            # Check if email or username already exists
+            existing_user = User.query.filter(
+                (User.email == form.email.data) | (User.username == form.username.data)
+            ).first()
+
+            if existing_user:
+                if existing_user.email == form.email.data:
+                    flash('The email is already registered. Please log in.', 'error')
+                elif existing_user.username == form.username.data:
+                    flash('The username is already taken. Please choose a different one.', 'error')
+                return render_template('signup.html', form=form)
+
+            # No duplicates, try to save the new user
+            try:
+                user = form.save()
+                login_user(user)
+                flash('Your account has been created!', 'success')
+                return redirect(url_for('main.index'))
+            except IntegrityError as e:
+                db.session.rollback()
+                flash('An error occurred during registration due to a database issue. Please try again later.', 'error')
+                print(f"Database Integrity Error: {e}")
+            except Exception as e:
+                db.session.rollback()
+                flash('An unexpected error occurred during registration. Please try again later.', 'error')
+                print(f"Unexpected Error: {e}")
+        else:
+            flash('There was an error with your registration. Please check the form and try again.', 'error')
+
+    return render_template('signup.html', form=form)
 
 
 # Login Route
@@ -54,7 +104,7 @@ def login_view():
 
 
 # Logout Route
-@main.route('/logout/', methods=['POST'])
+@main.route('/logout/', methods=['GET', 'POST'])
 @login_required
 def logout_view():
     logout_user()
