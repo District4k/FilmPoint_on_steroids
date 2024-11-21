@@ -1,9 +1,10 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint
+from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, db, User
 from .api import get_film_list_by_filter
-from .forms import RegisterForm, AuthenticationForm
+from .forms import RegisterForm, AuthenticationForm, ForgotPasswordForm, generate_reset_token, send_reset_email, \
+    verify_reset_token
 
 main = Blueprint('main', __name__)
 
@@ -19,6 +20,45 @@ def authenticate(username, password):
     if user and check_password_hash(user.password, password):
         return user
     return None
+
+
+@main.route('/reset_password/<token>/', methods=['GET', 'POST'])
+def reset_password(token):
+    user = verify_reset_token(token)
+    if user is None:
+        flash('The token is invalid or has expired', 'error')
+        return redirect(url_for('main.forgot_password'))
+
+    if request.method == 'POST':
+        # Handle password reset form submission
+        new_password = request.form.get('password')
+        if new_password:
+            user.set_password(new_password)  # Assuming your User model has this method
+            db.session.commit()  # Save changes to the database
+            flash('Your password has been reset successfully.', 'success')
+            return redirect(url_for('main.login'))
+        else:
+            flash('Please provide a valid password.', 'error')
+
+    return render_template('reset_password.html', token=token)
+
+
+@main.route('/forgot_password/', methods=['GET', 'POST'])
+def forgot_password():
+    form = ForgotPasswordForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Generate a password reset token
+            token = generate_reset_token(user, current_app.config['SECRET_KEY'])
+            # Send the reset link to the user’s email (pass 'mail' as argument)
+            send_reset_email(user, token, current_app.mail)  # Ensure 'mail' is passed here
+            flash('A password reset link has been sent to your email.', 'success')
+        else:
+            flash('Email not found.', 'error')
+        return redirect(url_for('main.login_view'))
+    return render_template('forgot_password.html', form=form)
 
 
 @main.route('/edit_profile', methods=['GET', 'POST'])

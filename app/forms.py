@@ -1,5 +1,4 @@
 # app/forms.py
-
 from flask_wtf import FlaskForm
 from app.models import User
 from werkzeug.security import generate_password_hash
@@ -7,6 +6,22 @@ from .extensions import db
 from sqlalchemy.exc import IntegrityError
 from wtforms import StringField, PasswordField, EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
+from flask import current_app, url_for
+from itsdangerous import URLSafeTimedSerializer
+from flask_mail import Message
+import jwt
+from datetime import datetime, timedelta
+
+
+class ResetPasswordForm(FlaskForm):
+    password1 = PasswordField('New Password', validators=[DataRequired()])
+    password2 = PasswordField('Confirm New Password',
+                              validators=[DataRequired(), EqualTo('password1', message='Passwords must match.')])
+
+
+class ForgotPasswordForm(FlaskForm):
+    email = EmailField('Email',
+                       validators=[DataRequired(), Email()])
 
 
 class AuthenticationForm(FlaskForm):
@@ -43,3 +58,39 @@ class RegisterForm(FlaskForm):
         except IntegrityError as e:
             db.session.rollback()
             raise ValueError("An error occurred while saving the user. Please try again.") from e
+
+
+def init_serializer():
+    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+
+
+# Generate a password reset token
+def generate_reset_token(user, secret_key):
+    expiration = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
+    token = jwt.encode({'user_id': user.id, 'exp': expiration}, secret_key, algorithm='HS256')
+    return token
+
+
+# Verify the password reset token
+def verify_reset_token(token):
+    try:
+        # Decode the token using the app's secret key
+        secret_key = current_app.config['SECRET_KEY']
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+        user_id = payload["user_id"]
+
+        # Retrieve the user from the database
+        return User.query.get(user_id)
+    except jwt.ExpiredSignatureError:
+        return None  # Token has expired
+    except jwt.InvalidTokenError:
+        return None  # Token is invalid
+
+
+# Send the password reset email
+def send_reset_email(user, token, mail):
+    """Send the password reset email."""
+    reset_url = url_for('main.reset_password', token=token, _external=True)
+    msg = Message('Password Reset Request', sender='film-point@artify.ee', recipients=[user.email])
+    msg.body = f'Click the link to reset your password: {reset_url}'
+    mail.send(msg)

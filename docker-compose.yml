@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: mysql:8.0
@@ -12,6 +14,18 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
 
+  smtp:
+    image: rnwood/smtp4dev:latest
+    container_name: smtp4dev
+    ports:
+      - "1025:25"   # SMTP service (use port 25 for sending emails)
+      - "5001:80"   # Web UI for smtp4dev (accessible at http://localhost:5000)
+    environment:
+      - SMTP_DOMAIN=localhost
+      - SMTP_PORT=25
+      - ServerOptions__Urls=http://*:80
+      - ServerOptions__HostName=smtp4dev
+
   web:
     build: .
     container_name: flask_app
@@ -23,8 +37,11 @@ services:
       - "5000:5000"
     depends_on:
       - db
+      - smtp
     volumes:
-      - .:/app                       # Mount the current directory to /app in the container
+      - .:/app                      # Mount the current directory to /app in the container
+    command: watchmedo auto-restart --patterns="*.py;*.html;*.css;.env" --recursive -- flask run --host=0.0.0.0
 
 volumes:
-  mysql-data:                         # Volume for persisting MySQL data
+  mysql-data:                        # Volume for persisting MySQL data
+
