@@ -1,10 +1,12 @@
-from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app
+from sqlite3 import IntegrityError
+from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, db, User
+from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, User
 from .api import get_film_list_by_filter
+from film_point.extensions import db
 from .forms import RegisterForm, AuthenticationForm, ForgotPasswordForm, generate_reset_token, send_reset_email, \
-    verify_reset_token
+    verify_reset_token, SurveyForm
 
 main = Blueprint('main', __name__)
 
@@ -33,10 +35,10 @@ def reset_password(token):
         # Handle password reset form submission
         new_password = request.form.get('password')
         if new_password:
-            user.set_password(new_password)  # Assuming your User model has this method
+            user.set_password(new_password)
             db.session.commit()  # Save changes to the database
             flash('Your password has been reset successfully.', 'success')
-            return redirect(url_for('main.login'))
+            return redirect(url_for('main.login_view'))
         else:
             flash('Please provide a valid password.', 'error')
 
@@ -169,9 +171,12 @@ def watchlist():
 
 
 # Survey intro route
+
+
 @main.route('/survey/', methods=['GET', 'POST'])
 @login_required
 def intro_survey():
+    form = SurveyForm()
     question_title = None
     user_survey_stage = current_user.current_stage
     questions = SurveyQuestion.query.filter_by(stage=user_survey_stage).all()
@@ -179,26 +184,27 @@ def intro_survey():
         question_title = questions[0].title
     stage_limit = 4
     if request.method == 'POST' and user_survey_stage < stage_limit:
-        submitted_answer = request.form.get('answer')
-        question_id = request.form.get('question')
-        question = SurveyQuestion.query.get(int(question_id))
-        answer = SurveyAnswer(user=current_user, question=question, answer=submitted_answer)
-        db.session.add(answer)
-        current_user.current_stage += 1
-        db.session.commit()
-        return redirect(url_for('main.intro_survey'))
+        if form.validate_on_submit():  # Ensure CSRF token is validated
+            submitted_answer = request.form.get('answer')
+            question_id = request.form.get('question')
+            question = SurveyQuestion.query.get(int(question_id))
+            answer = SurveyAnswer(user_id=current_user.id, question=question, answer=submitted_answer)
+            db.session.add(answer)
+            current_user.current_stage += 1
+            db.session.commit()
+            return redirect(url_for('main.intro_survey'))
     elif user_survey_stage == stage_limit:
         return redirect(url_for('main.get_recommendations'))
-    return render_template('movie_survey.html', questions=questions, question_title=question_title)
+    return render_template('movie_survey.html', questions=questions, question_title=question_title, form=form)
 
 
 # Get Recommendations Route
 @main.route('/get_recommendations/', methods=['GET'])
 @login_required
 def get_recommendations():
-    answers = SurveyAnswer.query.filter_by(user=current_user).all()
+    answers = SurveyAnswer.query.filter_by(user_id=current_user.id).all()
     answers_list = [answer.answer for answer in answers]
-    recommended_movies = get_film_list_by_filter(answers_list, request)
+    recommended_movies = get_film_list_by_filter(answers_list)
     return render_template('recommendation.html', recommended_movies=recommended_movies)
 
 

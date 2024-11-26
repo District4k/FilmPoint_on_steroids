@@ -1,9 +1,10 @@
 from flask import Flask
-from .models import User
+from .models import User, SurveyQuestion
 from .routes import main
 from .api import api
 from .extensions import db, login_manager, migrate
 from flask_mail import Mail
+
 
 # Create the Flask application
 def create_app():
@@ -15,6 +16,7 @@ def create_app():
     app.mail = mail
     # Initialize extensions
     db.init_app(app)
+    print(db.session.query)
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
@@ -22,7 +24,7 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(api, url_prefix='/api')
 
-    return app  # Return the app at the end of the function
+    return app  # Return the film_point at the end of the function
 
 
 # User loader function for Flask-Login

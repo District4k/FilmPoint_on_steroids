@@ -1,6 +1,6 @@
 [
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 1,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -10,7 +10,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 2,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -20,7 +20,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 3,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -30,7 +30,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 4,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 5,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -50,7 +50,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 6,
     "fields": {
       "title": "If movies were food, which flavor are you craving tonight?",
@@ -60,7 +60,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 7,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -70,7 +70,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 8,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 9,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -90,7 +90,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 10,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -100,7 +100,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 11,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -110,7 +110,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 12,
     "fields": {
       "title": "Which era of movie magic tickles your fancy?",
@@ -120,7 +120,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 13,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",
@@ -130,7 +130,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 14,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",
@@ -140,7 +140,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 15,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",
@@ -150,7 +150,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 16,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",
@@ -160,7 +160,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 17,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",
@@ -170,7 +170,7 @@
     }
   },
   {
-    "model": "events.surveyquestion",
+    "model": "surveyquestion",
     "pk": 18,
     "fields": {
       "title": "Which film industry produces your favorite cinematic gems?",

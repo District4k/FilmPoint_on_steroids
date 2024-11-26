@@ -1,6 +1,6 @@
-from app.extensions import db  # Only import db from app.extensions
 from flask_login import UserMixin
-
+from werkzeug.security import generate_password_hash, check_password_hash
+from film_point.extensions import db
 
 
 class User(db.Model, UserMixin):
@@ -15,6 +15,14 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+    def set_password(self, password):
+        """Hashes the password and sets it."""
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        """Checks if the provided password matches the stored hash."""
+        return check_password_hash(self.password, password)
 
 
 class SurveyQuestion(db.Model):

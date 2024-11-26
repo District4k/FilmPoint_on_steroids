@@ -4,7 +4,6 @@ import random
 import requests
 from flask import Blueprint, jsonify, request
 from .models import Movie, Watchlist
-from .extensions import db  # Import db from extensions
 
 API_KEY = 'your_api_key_here'
 API_URL = 'https://api.themoviedb.org/3'
@@ -27,7 +26,7 @@ genres = {
 }
 
 # Load genres data from the static folder (adjust the path if needed)
-genres_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/film-point/genres.json')
+genres_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/film_point/genres.json')
 with open(genres_file_path, 'r') as f:
     genres_data = json.load(f)
 

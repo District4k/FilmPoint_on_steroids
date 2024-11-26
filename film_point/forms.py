@@ -1,16 +1,20 @@
-# app/forms.py
-from flask_wtf import FlaskForm
-from app.models import User
+# film_point/forms.py
+from .models import User
 from werkzeug.security import generate_password_hash
 from .extensions import db
 from sqlalchemy.exc import IntegrityError
-from wtforms import StringField, PasswordField, EmailField
+from wtforms import StringField, PasswordField, EmailField, HiddenField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 from flask import current_app, url_for
 from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 import jwt
 from datetime import datetime, timedelta
+from flask_wtf import FlaskForm
+
+
+class SurveyForm(FlaskForm):
+    csrf_token = HiddenField()
 
 
 class ResetPasswordForm(FlaskForm):
@@ -74,7 +78,7 @@ def generate_reset_token(user, secret_key):
 # Verify the password reset token
 def verify_reset_token(token):
     try:
-        # Decode the token using the app's secret key
+        # Decode the token using the film_point's secret key
         secret_key = current_app.config['SECRET_KEY']
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         user_id = payload["user_id"]
@@ -91,6 +95,6 @@ def verify_reset_token(token):
 def send_reset_email(user, token, mail):
     """Send the password reset email."""
     reset_url = url_for('main.reset_password', token=token, _external=True)
-    msg = Message('Password Reset Request', sender='film-point@artify.ee', recipients=[user.email])
+    msg = Message('Password Reset Request', sender='film_point@artify.ee', recipients=[user.email])
     msg.body = f'Click the link to reset your password: {reset_url}'
     mail.send(msg)

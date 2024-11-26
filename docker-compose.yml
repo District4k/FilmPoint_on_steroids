@@ -39,8 +39,7 @@ services:
       - db
       - smtp
     volumes:
-      - .:/app                      # Mount the current directory to /app in the container
-    command: watchmedo auto-restart --patterns="*.py;*.html;*.css;.env" --recursive -- flask run --host=0.0.0.0
+      - .:/film_point                      # Mount the current directory to /film_point in the container
 
 volumes:
   mysql-data:                        # Volume for persisting MySQL data
