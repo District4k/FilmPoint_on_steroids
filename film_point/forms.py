@@ -93,8 +93,8 @@ def verify_reset_token(token):
 
 # Send the password reset email
 def send_reset_email(user, token, mail):
-    """Send the password reset email."""
     reset_url = url_for('main.reset_password', token=token, _external=True)
     msg = Message('Password Reset Request', sender='film_point@artify.ee', recipients=[user.email])
     msg.body = f'Click the link to reset your password: {reset_url}'
     mail.send(msg)
+

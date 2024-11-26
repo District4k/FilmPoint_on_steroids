@@ -1,5 +1,5 @@
 from sqlite3 import IntegrityError
-from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app, session
+from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, User
@@ -54,8 +54,8 @@ def forgot_password():
         if user:
             # Generate a password reset token
             token = generate_reset_token(user, current_app.config['SECRET_KEY'])
-            # Send the reset link to the user’s email (pass 'mail' as argument)
-            send_reset_email(user, token, current_app.mail)  # Ensure 'mail' is passed here
+            # Send the reset link to the user’s email (pass 'current_app.mail' as argument)
+            send_reset_email(user, token, current_app.mail)  # Ensure 'current_app.mail' is passed here
             flash('A password reset link has been sent to your email.', 'success')
         else:
             flash('Email not found.', 'error')
