@@ -17,11 +17,39 @@ def index():
     return render_template('index.html')
 
 
+def generate_confirmation_token(email):
+    return current_app.serializer.dumps(email, salt='email-confirmation')
+
+
+def confirm_token(token, expiration=3600):
+    try:
+        return current_app.serializer.loads(token, salt='email-confirmation', max_age=expiration)
+    except Exception:
+        return None
+
+
 def authenticate(username, password):
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         return user
     return None
+
+
+@main.route('/confirm/<token>')
+def confirm_email(token):
+    email = confirm_token(token)
+    if email:
+        user = User.query.filter_by(email=email).first()
+        if user and not user.is_confirmed:
+            user.is_confirmed = True
+            db.session.commit()
+            flash('Your email has been confirmed!', 'success')
+        else:
+            flash('This account is already confirmed or invalid.', 'warning')
+    else:
+        flash('The confirmation link is invalid or expired.', 'danger')
+
+    return redirect(url_for('main.login'))
 
 
 @main.route('/retake_survey', methods=['POST'])
@@ -52,23 +80,29 @@ def retake_survey():
 @main.route('/delete_account', methods=['POST'])
 @login_required
 def delete_account():
-    # Get the current user from the session
-    user = current_user
+    # Get the password entered by the user
+    password = request.form.get('password')
 
-    # Deleting the user account from the database
+    if not password:
+        flash("Please enter your password to confirm account deletion.", "danger")
+        return redirect(url_for('main.index'))  # Redirect back to the profile page or a confirmation page
+
     try:
-        db.session.delete(user)
-        db.session.commit()
-        flash('Your account has been deleted successfully.', 'success')
+        # Check if the entered password matches the current user's password
+        if check_password_hash(current_user.password, password):
+            # Password matched, proceed with deletion
+            db.session.delete(current_user)
+            db.session.commit()
+            flash('Your account has been deleted successfully.', 'success')
+            logout_user()  # Log the user out
+            return redirect(url_for('main.index'))  # Redirect to the homepage or login page
+        else:
+            flash("Incorrect password. Account deletion failed.", "danger")
+            return redirect(url_for('main.index'))  # Redirect back to the profile page
     except Exception as e:
         db.session.rollback()
         flash('There was an error deleting your account. Please try again.', 'danger')
-
-    # Log the user out after account deletion
-    logout_user()
-
-    # Redirect to the homepage or login page after account deletion
-    return redirect(url_for('main.index'))  # Replace with your desired redirect location
+        return redirect(url_for('main.index'))
 
 
 @main.route('/reset_password/<token>/', methods=['GET', 'POST'])

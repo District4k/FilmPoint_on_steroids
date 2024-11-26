@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
-111
+
 {% block title %}Home{% endblock %}
-222
+
 {% block content %}
     <div class="movie-container">
         <div class="row justify-content-center">
@@ -16,17 +16,35 @@
                         <div class="text-center mt-4">
                             <a href="{{ url_for('main.edit_profile') }}" class="btn btn-primary">Edit Profile</a>
                         </div>
+
+                        <!-- Account Deletion Section -->
                         <div class="text-center mt-4">
+                            <button id="delete-account-btn" class="btn btn-danger">Delete Account</button>
+                        </div>
+
+                        <!-- Password Confirmation Form (Initially Hidden) -->
+                        <div class="text-center mt-4" id="password-form" style="display:none;">
+                            <p>Please enter your password to confirm deletion.</p>
                             <form method="POST" action="{{ url_for('main.delete_account') }}">
-                                <button type="submit"
-                                        onclick="return confirm('Are you sure you want to delete your account? This action cannot be undone.')"
-                                        class="btn btn-primary">Delete Account
-                                </button>
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" name="password" required>
+                                <button type="submit" class="btn btn-danger">Confirm Deletion</button>
                             </form>
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        // Show the password confirmation form when the delete button is clicked
+        document.getElementById('delete-account-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                // Show the password form if the user confirms
+                document.getElementById('password-form').style.display = 'block';
+            }
+        });
+    </script>
 {% endblock %}
