@@ -11,98 +11,101 @@
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar custom-navbar navbar-expand-lg px-3">
-        <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
-            <img src="{{ url_for('static', filename='film_point/filmpoint_logo_light.png') }}" alt="FilmPoint Logo"
-                 width="50" height="50" class="d-inline-block align-text-top me-2">
-            FilmPoint
-        </a>
+<!-- Navbar -->
+<nav class="navbar custom-navbar navbar-expand-lg px-3">
+    <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+        <img src="{{ url_for('static', filename='film_point/filmpoint_logo_light.png') }}" alt="FilmPoint Logo"
+             width="50" height="50" class="d-inline-block align-text-top me-2">
+        FilmPoint
+    </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                {% if current_user.is_authenticated %}
-                    {% if request.path not in ['/', '/survey/'] %}
-                        <li class="nav-item">
-                            <form method="POST" action="{{ url_for('main.intro_survey') }}" class="d-inline">
-                                <input type="hidden" name="reset" value="reset">
-                                <a class="nav-link" type="submit">Retake Survey</a>
-                            </form>
-                        </li>
-                    {% endif %}
-
-                    {% if current_user.current_stage == 4 %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.get_recommendations') }}">Recommendations</a>
-                        </li>
-                    {% endif %}
-
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto align-items-center">
+            {% if current_user.is_authenticated %}
+                {% if request.path not in ['/', '/survey/'] %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.watchlist') }}">Watchlist</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.logout_view') }}">Logout</a>
-                    </li>
-                {% else %}
-                    {% if request.endpoint != 'main.login_view' %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('main.login_view') }}">Login</a>
-                        </li>
-                    {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
+                        <form method="POST" action="{{ url_for('main.retake_survey') }}" class="d-inline">
+                            <input type="hidden" name="stage_reset" value="stage_reset">
+                            <button type="submit" class="nav-link btn btn-link">
+                                Retake Survey
+                            </button>
+                        </form>
                     </li>
                 {% endif %}
-            </ul>
-        </div>
-    </nav>
 
-    <!-- Flash Messages -->
-    <div class="container mt-3">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message[0] }} text-center">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+                {% if current_user.current_stage == 4 %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.get_recommendations') }}">Recommendations</a>
+                    </li>
+                {% endif %}
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.profile') }}">{{ current_user.username }}'s Profile</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.watchlist') }}">Watchlist</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.logout_view') }}">Logout</a>
+                </li>
+            {% else %}
+                {% if request.endpoint != 'main.login_view' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.login_view') }}">Login</a>
+                    </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
+                </li>
             {% endif %}
-        {% endwith %}
+        </ul>
     </div>
+</nav>
 
-    <!-- Main Content -->
-    <main class="container my-5">
-        {% block content %}
-        {% endblock %}
-    </main>
+<!-- Flash Messages -->
+<div class="container mt-3">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message[0] }} text-center">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
 
-    <!-- TMDB Logo -->
-    <div class="TMDB-logo-container position-fixed bottom-0 end-0 p-3">
-        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" aria-label="TMDB Logo">
-            <img src="{{ url_for('static', filename='film_point/TMDB_logo.svg') }}" alt="Powered by TMDB" width="55" height="55">
-        </a>
+<!-- Main Content -->
+<main class="container my-5">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- TMDB Logo -->
+<div class="TMDB-logo-container position-fixed bottom-0 end-0 p-3">
+    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" aria-label="TMDB Logo">
+        <img src="{{ url_for('static', filename='film_point/TMDB_logo.svg') }}" alt="Powered by TMDB" width="55"
+             height="55">
+    </a>
+</div>
+
+<!-- Footer -->
+<footer class="py-3 mt-auto bg-dark text-light position-fixed bottom-0">
+    <div class="container text-center">
+        <p class="mb-0">&copy; 2024 FilmPoint. All rights reserved.</p>
     </div>
+</footer>
 
-    <!-- Footer -->
-    <footer class="py-3 mt-auto bg-dark text-light position-fixed bottom-0">
-        <div class="container text-center">
-            <p class="mb-0">&copy; 2024 FilmPoint. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-pOVehAr/ZPn11E2e+RXu5t3yAoDhyZJ2r8fzVS4pqTOuEf1KDPaEhRXet3OGub1w"
-            crossorigin="anonymous"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-pOVehAr/ZPn11E2e+RXu5t3yAoDhyZJ2r8fzVS4pqTOuEf1KDPaEhRXet3OGub1w"
+        crossorigin="anonymous"></script>
 </body>
 </html>

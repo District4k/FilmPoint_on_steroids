@@ -24,6 +24,53 @@ def authenticate(username, password):
     return None
 
 
+@main.route('/retake_survey', methods=['POST'])
+@login_required
+def retake_survey():
+    if request.method == 'POST':
+        stage_reset = request.form.get('stage_reset')
+
+        if stage_reset:
+            # Reset the current stage
+            current_user.current_stage = 1
+
+            # Commit the change to the user
+            db.session.add(current_user)
+            db.session.commit()
+
+            # Delete the user's survey answers
+            SurveyAnswer.query.filter_by(user_id=current_user.id).delete()
+            db.session.commit()
+
+            # Redirect to the intro survey page
+            return redirect(url_for('main.intro_survey'))
+
+        # If no stage_reset, redirect to the main index
+        return redirect(url_for('main.index'))
+
+
+@main.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    # Get the current user from the session
+    user = current_user
+
+    # Deleting the user account from the database
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Your account has been deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('There was an error deleting your account. Please try again.', 'danger')
+
+    # Log the user out after account deletion
+    logout_user()
+
+    # Redirect to the homepage or login page after account deletion
+    return redirect(url_for('main.index'))  # Replace with your desired redirect location
+
+
 @main.route('/reset_password/<token>/', methods=['GET', 'POST'])
 def reset_password(token):
     user = verify_reset_token(token)
@@ -72,20 +119,36 @@ def edit_profile():
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
 
-        if password != confirm_password:
-            flash('Passwords do not match')
+        # Ensure username and email are not empty
+        if not username or not email:
+            flash('Username and email are required.', 'danger')
             return redirect(url_for('main.edit_profile'))
 
+        # Check if passwords match
+        if password and password != confirm_password:
+            flash('Passwords do not match', 'danger')
+            return redirect(url_for('main.edit_profile'))
+
+        # Update the user's details
         current_user.username = username
         current_user.email = email
 
+        # If the user provided a new password, hash and update it
         if password:
             current_user.password = generate_password_hash(password)
 
-        db.session.commit()
+        try:
+            # Commit the changes to the database
+            db.session.commit()
+            flash('Your profile has been successfully updated!', 'success')
+        except Exception as e:
+            # Rollback in case of an error
+            db.session.rollback()
+            flash('An error occurred while updating your profile. Please try again.', 'danger')
+            print(e)  # For debugging purposes
 
-        flash('Your password was successfully updated!')
         return redirect(url_for('main.profile'))
+
     return render_template('edit_profile.html')
 
 

@@ -21,13 +21,6 @@ a:hover {
     text-decoration: underline;
 }
 
-/* Container */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
 /* Header */
 header {
     background: linear-gradient(to right, #007bff, #0056b3);
@@ -211,4 +204,29 @@ footer p {
     .hero p {
         font-size: 1rem;
     }
+}
+
+/* Navbar Button Styles */
+.navbar .nav-item .nav-link,
+.navbar .nav-item button.nav-link {
+    display: inline-block;
+    padding: 10px 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s, border-color 0.3s;
+}
+
+.navbar .nav-item .nav-link:hover,
+.navbar .nav-item button.nav-link:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    transform: scale(1.1);
+}
+
+.navbar .nav-item button.nav-link {
+    cursor: pointer;
 }

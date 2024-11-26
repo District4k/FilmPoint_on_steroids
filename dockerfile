@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*  # Clean up apt cache
 
 # Copy the requirements file and install dependencies
-COPY requirements.txt /app/
+COPY requirements.txt /film_point/
 RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install watchdog
 

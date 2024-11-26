@@ -13,6 +13,10 @@ class User(db.Model, UserMixin):
     # Relationship with Watchlist
     watchlists = db.relationship('Watchlist', backref='user', lazy=True)
 
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
     def __repr__(self):
         return f'<User {self.username}>'
 
@@ -41,7 +45,7 @@ class SurveyQuestion(db.Model):
 
 class SurveyAnswer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     answer = db.Column(db.Text)
     question_id = db.Column(db.Integer, db.ForeignKey('survey_question.id'), nullable=False)
 
@@ -133,7 +137,7 @@ class Answer(db.Model):
 
 class Watchlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     movie_id = db.Column(db.Integer, db.ForeignKey('movie.id'), nullable=False)
 
     def __repr__(self):
