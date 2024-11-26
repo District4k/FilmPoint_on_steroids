@@ -17,39 +17,11 @@ def index():
     return render_template('index.html')
 
 
-def generate_confirmation_token(email):
-    return current_app.serializer.dumps(email, salt='email-confirmation')
-
-
-def confirm_token(token, expiration=3600):
-    try:
-        return current_app.serializer.loads(token, salt='email-confirmation', max_age=expiration)
-    except Exception:
-        return None
-
-
 def authenticate(username, password):
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         return user
     return None
-
-
-@main.route('/confirm/<token>')
-def confirm_email(token):
-    email = confirm_token(token)
-    if email:
-        user = User.query.filter_by(email=email).first()
-        if user and not user.is_confirmed:
-            user.is_confirmed = True
-            db.session.commit()
-            flash('Your email has been confirmed!', 'success')
-        else:
-            flash('This account is already confirmed or invalid.', 'warning')
-    else:
-        flash('The confirmation link is invalid or expired.', 'danger')
-
-    return redirect(url_for('main.login'))
 
 
 @main.route('/retake_survey', methods=['POST'])
