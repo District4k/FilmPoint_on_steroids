@@ -3,9 +3,10 @@ import json
 import random
 import requests
 from flask import Blueprint, jsonify, request
+from flask_login import current_user
 from .models import Movie, Watchlist
 
-API_KEY = 'your_api_key_here'
+API_KEY = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJiMTYxYzYxMmJjM2UyYjdlMWZiYzgxMjdmYWY0M2I0NiIsIm5iZiI6MTcyMzgwOTgwMC4wNDkxMTksInN1YiI6IjY2YmRkYjAyNTNhNTI1NTY4NmUxNDdiYiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.c9YAGpSr1isIluCE77kzgro9UvlmIy0e-fRqqoPVkfM'
 API_URL = 'https://api.themoviedb.org/3'
 
 regions = {
@@ -89,7 +90,7 @@ def transform_movie_data(movie_data):
                       rating=rating)
 
         # Check if the movie is already in the user's watchlist
-        movie.isWatchListed = Watchlist.query.filter_by(user_id=request.user.id, movie_id=movie_id).first() is not None
+        movie.isWatchListed = Watchlist.query.filter_by(user_id=current_user.id, movie_id=movie_id).first() is not None
         movies.append(movie)
 
     return movies

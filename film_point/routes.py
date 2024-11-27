@@ -221,7 +221,6 @@ def confirm_email(token):
         return redirect(url_for('main.register'))  # Redirect back to registration page on error
 
 
-
 @main.route('/login/', methods=['GET', 'POST'])
 def login_view():
     form = AuthenticationForm(request.form)

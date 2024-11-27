@@ -12,7 +12,7 @@ class User(db.Model, UserMixin):
     is_confirmed = db.Column(db.Boolean, default=False)
 
     # Relationship with Watchlist
-    watchlists = db.relationship('Watchlist', backref='user', lazy=True)
+    watchlists = db.relationship('Watchlist', backref='user', lazy=True, cascade='all, delete')
 
     def save(self):
         db.session.add(self)

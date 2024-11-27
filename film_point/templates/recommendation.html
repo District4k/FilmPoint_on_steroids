@@ -19,7 +19,7 @@
                         <h2 class="movie-title">{{ movie.name }}</h2>
                         <div class="movie-year">Year: {{ movie.year }}</div>
                         <div class="movie-rating">Rating: {{ movie.rating }}</div>
-                        <div class="movie-genre">Genres: {{ movie.genre | join(', ') }}</div>
+                        <div class="movie-genre">Genres: {{ movie.genre }}</div>
                         <p class="movie-description">{{ movie.description }}</p>
 
                         <div class="buttons">
@@ -31,8 +31,8 @@
                             {% else %}
                                 <form id="watchlistForm-{{ movie.movie_id }}"
                                       method="POST"
-                                      action="{{ url_for('add_to_watchlist') }}">
-                                    {{ form.hidden_tag() }}
+                                      action="{{ url_for('main.add_to_watchlist') }}">
+
                                     <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
                                     <input type="hidden" name="movie_name" value="{{ movie.name }}">
                                     <input type="hidden" name="movie_image" value="{{ movie.image }}">

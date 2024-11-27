@@ -21,12 +21,10 @@
                                 <div class="movie-rating">Rating: {{ movie.rating }}</div>
                                 <div class="movie-genre">Genres: {{ movie.genre }}</div>
                                 <p class="movie-description">{{ movie.description }}</p>
-
                                 <div class="buttons">
                                     <form id="watchlistForm-{{ movie.movie_id }}" method="POST"
-                                          action="{{ url_for('delete_from_watchlist') }}"
+                                          action="{{ url_for('main.delete_from_watchlist') }}"
                                           onsubmit="return confirmDelete();">
-                                        {{ form.hidden_tag() }}
                                         <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
                                         <button class="btn-custom" id="watchlistButton-{{ movie.movie_id }}"
                                                 type="submit">

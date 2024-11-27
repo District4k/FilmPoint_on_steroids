@@ -17,9 +17,9 @@ document.querySelector('.spark-button').addEventListener('mousemove', function (
         button.appendChild(spark);
 
         // Remove the spark element after animation
- setTimeout(() => {
-    spark.remove();
-}, 500);
+        setTimeout(() => {
+            spark.remove();
+        }, 500);
         ; // Time should match the duration of the animation
     }
 });
@@ -39,3 +39,71 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+
+function addToWatchlist(movieId) {
+    const button = document.getElementById(`watchlistButton-${movieId}`);
+    button.classList.add('pulsing'); // Add the pulsing class to animate the button
+
+    fetch('/add_to_watchlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({movie_id: movieId})
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response
+            if (data.success) {
+                alert('Movie added to watchlist!');
+            } else {
+                alert('Failed to add movie.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        })
+        .finally(() => {
+            // Remove the pulsing class after the animation is done
+            setTimeout(() => button.classList.remove('pulsing'), 500);
+        });
+}
+
+function addToWatchlist(movieId) {
+    const button = document.getElementById(`watchlistButton-${movieId}`);
+    const spinner = document.createElement('div');
+    spinner.classList.add('spinner'); // Create the spinner div
+
+    // Append the spinner to the button and disable the button
+    button.appendChild(spinner);
+    button.disabled = true;
+
+    fetch('/add_to_watchlist', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({movie_id: movieId})
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Handle response
+            if (data.success) {
+                alert('Movie added to watchlist!');
+            } else {
+                alert('Failed to add movie.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        })
+        .finally(() => {
+            // Remove the spinner and re-enable the button
+            button.removeChild(spinner);
+            button.disabled = false;
+        });
+}
+
