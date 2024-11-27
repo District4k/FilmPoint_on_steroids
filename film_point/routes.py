@@ -239,9 +239,6 @@ def watchlist():
     return render_template('watchlist.html', movies=movies_in_watchlist, user=current_user)
 
 
-# Survey intro route
-
-
 @main.route('/survey/', methods=['GET', 'POST'])
 @login_required
 def intro_survey():
@@ -277,11 +274,16 @@ def get_recommendations():
     return render_template('recommendation.html', recommended_movies=recommended_movies)
 
 
-# Movie Detail Route
 @main.route('/movie/<int:movie_id>/', methods=['GET'])
 def movie_detail(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     return render_template('movie_detail.html', movie=movie)
+
+
+@main.route('/movie_list', methods=['GET'])
+def movie_list():
+    movies = Movie.query.all()
+    return render_template('movie_list.html', movies=movies)
 
 
 # Add to Watchlist Route

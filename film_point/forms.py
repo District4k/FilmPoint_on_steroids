@@ -3,7 +3,7 @@ from .models import User
 from werkzeug.security import generate_password_hash
 from .extensions import db
 from sqlalchemy.exc import IntegrityError
-from wtforms import StringField, PasswordField, EmailField, HiddenField
+from wtforms import StringField, PasswordField, EmailField, HiddenField,IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 from flask import current_app, url_for
 from itsdangerous import URLSafeTimedSerializer
@@ -11,7 +11,10 @@ from flask_mail import Message
 import jwt
 from datetime import datetime, timedelta
 from flask_wtf import FlaskForm
+from wtforms.widgets import HiddenInput
 
+class AddToWatchlistForm(FlaskForm):
+    name = IntegerField(widget=HiddenInput())
 
 class SurveyForm(FlaskForm):
     csrf_token = HiddenField()
