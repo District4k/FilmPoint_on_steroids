@@ -1,4 +1,5 @@
 from sqlite3 import IntegrityError
+import re
 from flask import render_template, request, redirect, url_for, flash, jsonify, Blueprint, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -120,27 +121,34 @@ def forgot_password():
 @login_required
 def edit_profile():
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        username = request.form.get('username')  # New username
+        password = request.form.get('password')  # New password
+        confirm_password = request.form.get('confirm_password')  # Confirm new password
+        current_password = request.form.get('current_password')  # Current password (for verification)
 
-        # Ensure username and email are not empty
-        if not username or not email:
-            flash('Username and email are required.', 'danger')
+        # Ensure username and current password are provided
+        if not username or not current_password:
+            flash('Username and current password are required.', 'danger')
+            return redirect(url_for('main.edit_profile'))
+
+        # Check if the current password entered is correct
+        if not check_password_hash(current_user.password, current_password):
+            flash('Incorrect current password. Please try again.', 'danger')
             return redirect(url_for('main.edit_profile'))
 
         # Check if passwords match
         if password and password != confirm_password:
-            flash('Passwords do not match', 'danger')
+            flash('Passwords do not match.', 'danger')
             return redirect(url_for('main.edit_profile'))
 
-        # Update the user's details
+        # Update the user's username
         current_user.username = username
-        current_user.email = email
 
         # If the user provided a new password, hash and update it
         if password:
+            if len(password) < 6:  # Password length validation
+                flash('Password must be at least 6 characters long.', 'danger')
+                return redirect(url_for('main.edit_profile'))
             current_user.password = generate_password_hash(password)
 
         try:
@@ -148,14 +156,15 @@ def edit_profile():
             db.session.commit()
             flash('Your profile has been successfully updated!', 'success')
         except Exception as e:
-            # Rollback in case of an error
+            # General error handling
             db.session.rollback()
-            flash('An error occurred while updating your profile. Please try again.', 'danger')
+            flash('An unexpected error occurred. Please try again later.', 'danger')
             print(e)  # For debugging purposes
 
         return redirect(url_for('main.profile'))
 
     return render_template('edit_profile.html')
+
 
 
 @main.route('/register/', methods=['GET', 'POST'])
