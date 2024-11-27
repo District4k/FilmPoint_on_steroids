@@ -71,33 +71,32 @@ def init_serializer():
     return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
 
 
-# Generate a password reset token
-def generate_reset_token(user, secret_key):
+def generate_token(user, secret_key):
     expiration = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
     token = jwt.encode({'user_id': user.id, 'exp': expiration}, secret_key, algorithm='HS256')
     return token
 
-
-# Verify the password reset token
-def verify_reset_token(token):
+def verify_token(token, secret_key):
     try:
-        # Decode the token using the film_point's secret key
-        secret_key = current_app.config['SECRET_KEY']
+        secret_key = init_serializer().loads(token)['secret_key']
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         user_id = payload["user_id"]
-
-        # Retrieve the user from the database
-        return User.query.get(user_id)
+        return user_id
     except jwt.ExpiredSignatureError:
         return None  # Token has expired
     except jwt.InvalidTokenError:
         return None  # Token is invalid
 
 
-# Send the password reset email
+
 def send_reset_email(user, token, mail):
     reset_url = url_for('main.reset_password', token=token, _external=True)
     msg = Message('Password Reset Request', sender='film_point@artify.ee', recipients=[user.email])
     msg.body = f'Click the link to reset your password: {reset_url}'
     mail.send(msg)
 
+def send_confirm_email(user, token, mail):
+    confirm_url = url_for('main.confirm_email', token=token, _external=True)
+    msg = Message('Account confirmation', sender='film_point@artify.ee', recipients=[user.email])
+    msg.body = f'Click the link to confirm account: {confirm_url}'
+    mail.send(msg)
