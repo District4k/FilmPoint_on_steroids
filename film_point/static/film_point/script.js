@@ -17,14 +17,9 @@ document.querySelector('.spark-button').addEventListener('mousemove', function (
         button.appendChild(spark);
 
         // Remove the spark element after animation
-        setTimeout((500)
-    =>
-        {
-            spark.remove();
-        }
-    ,
-        500
-    )
+ setTimeout(() => {
+    spark.remove();
+}, 500);
         ; // Time should match the duration of the animation
     }
 });

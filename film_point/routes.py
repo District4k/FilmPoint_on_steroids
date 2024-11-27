@@ -5,8 +5,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, User
 from .api import get_film_list_by_filter
 from film_point.extensions import db
-from .forms import RegisterForm, AuthenticationForm, ForgotPasswordForm, generate_reset_token, send_reset_email, \
-    verify_reset_token, SurveyForm
+from .forms import RegisterForm, AuthenticationForm, ForgotPasswordForm, generate_token, send_reset_email, \
+    verify_token, SurveyForm, send_confirm_email
 
 main = Blueprint('main', __name__)
 
@@ -17,39 +17,11 @@ def index():
     return render_template('index.html')
 
 
-def generate_confirmation_token(email):
-    return current_app.serializer.dumps(email, salt='email-confirmation')
-
-
-def confirm_token(token, expiration=3600):
-    try:
-        return current_app.serializer.loads(token, salt='email-confirmation', max_age=expiration)
-    except Exception:
-        return None
-
-
 def authenticate(username, password):
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password, password):
         return user
     return None
-
-
-@main.route('/confirm/<token>')
-def confirm_email(token):
-    email = confirm_token(token)
-    if email:
-        user = User.query.filter_by(email=email).first()
-        if user and not user.is_confirmed:
-            user.is_confirmed = True
-            db.session.commit()
-            flash('Your email has been confirmed!', 'success')
-        else:
-            flash('This account is already confirmed or invalid.', 'warning')
-    else:
-        flash('The confirmation link is invalid or expired.', 'danger')
-
-    return redirect(url_for('main.login'))
 
 
 @main.route('/retake_survey', methods=['POST'])
@@ -107,7 +79,7 @@ def delete_account():
 
 @main.route('/reset_password/<token>/', methods=['GET', 'POST'])
 def reset_password(token):
-    user = verify_reset_token(token)
+    user = verify_token(token)
     if user is None:
         flash('The token is invalid or has expired', 'error')
         return redirect(url_for('main.forgot_password'))
@@ -134,7 +106,7 @@ def forgot_password():
         user = User.query.filter_by(email=email).first()
         if user:
             # Generate a password reset token
-            token = generate_reset_token(user, current_app.config['SECRET_KEY'])
+            token = generate_token(user, current_app.config['SECRET_KEY'])
             # Send the reset link to the user’s email (pass 'current_app.mail' as argument)
             send_reset_email(user, token, current_app.mail)  # Ensure 'current_app.mail' is passed here
             flash('A password reset link has been sent to your email.', 'success')
@@ -186,15 +158,12 @@ def edit_profile():
     return render_template('edit_profile.html')
 
 
-# Register Route
 @main.route('/register/', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
 
     if request.method == 'POST':
-        # Validate the form
         if form.validate():
-            # Check if email or username already exists
             existing_user = User.query.filter(
                 (User.email == form.email.data) | (User.username == form.username.data)
             ).first()
@@ -206,19 +175,21 @@ def register():
                     flash('The username is already taken. Please choose a different one.', 'error')
                 return render_template('signup.html', form=form)
 
-            # No duplicates, try to save the new user
             try:
-                user = form.save()
-                login_user(user)
-                flash('Your account has been created!', 'success')
-                return redirect(url_for('main.index'))
+                user = form.save()  # Ensure this is saving the user correctly
+                if user:
+                    token = generate_token(user, current_app.config['SECRET_KEY'])
+                    send_confirm_email(user, token, current_app.mail)
+                    flash('A confirmation email has been sent. Please check your inbox.', 'success')
+                else:
+                    flash('An error occurred while saving your details. Please try again.', 'error')
             except IntegrityError as e:
                 db.session.rollback()
                 flash('An error occurred during registration due to a database issue. Please try again later.', 'error')
                 print(f"Database Integrity Error: {e}")
             except Exception as e:
                 db.session.rollback()
-                flash('An unexpected error occurred during registration. Please try again later.', 'error')
+                flash(f'An unexpected error occurred: {str(e)}. Please try again later.', 'error')
                 print(f"Unexpected Error: {e}")
         else:
             flash('There was an error with your registration. Please check the form and try again.', 'error')
@@ -226,19 +197,57 @@ def register():
     return render_template('signup.html', form=form)
 
 
-# Login Route
+@main.route('/confirm/<token>')
+def confirm_email(token):
+    try:
+        # Verify the token and get the associated user
+        user_id = verify_token(token)
+        user = User.query.get(user_id)
+
+        # Check if the user exists and if their email hasn't been confirmed yet
+        if user and not user.is_confirmed:
+            user.is_confirmed = True
+            db.session.commit()
+            flash('Your email has been confirmed successfully!', 'success')
+            return redirect(url_for('main.login_view'))  # Redirect to login after confirmation
+        else:
+            flash('Invalid or expired confirmation link.', 'error')
+            return redirect(url_for('main.register'))  # Redirect back to registration if link is invalid
+
+    except Exception as e:
+        # Flash a generic error message if an exception occurs
+        flash('An error occurred while confirming your email. Please try again later.', 'error')
+        print(f"Error during email confirmation: {e}")  # Logging for debugging (use proper logging in production)
+        return redirect(url_for('main.register'))  # Redirect back to registration page on error
+
+
+
 @main.route('/login/', methods=['GET', 'POST'])
 def login_view():
     form = AuthenticationForm(request.form)
+
+    # Handle POST request
     if request.method == 'POST' and form.validate():
         username = form.username.data
         password = form.password.data
-        user = authenticate(username, password)
+
+        # Authenticate the user with username and password
+        user = authenticate(username=username, password=password)
+
         if user:
+            # Check if the user's email is confirmed
+            if not user.is_confirmed:
+                flash('Please confirm your email first.', 'error')
+                return render_template('login.html', form=form)
+
+            # Log the user in if email is confirmed
             login_user(user)
             flash(f'Welcome back, {username}!', 'success')
             return redirect(url_for('main.index'))
+
+        # If authentication fails
         flash('Invalid username or password.', 'error')
+
     return render_template('login.html', form=form)
 
 
@@ -265,9 +274,6 @@ def watchlist():
     movie_ids_in_watchlist = [entry.movie_id for entry in Watchlist.query.filter_by(user=current_user).all()]
     movies_in_watchlist = Movie.query.filter(Movie.id.in_(movie_ids_in_watchlist)).all()
     return render_template('watchlist.html', movies=movies_in_watchlist, user=current_user)
-
-
-# Survey intro route
 
 
 @main.route('/survey/', methods=['GET', 'POST'])
@@ -305,11 +311,16 @@ def get_recommendations():
     return render_template('recommendation.html', recommended_movies=recommended_movies)
 
 
-# Movie Detail Route
 @main.route('/movie/<int:movie_id>/', methods=['GET'])
 def movie_detail(movie_id):
     movie = Movie.query.get_or_404(movie_id)
     return render_template('movie_detail.html', movie=movie)
+
+
+@main.route('/movie_list', methods=['GET'])
+def movie_list():
+    movies = Movie.query.all()
+    return render_template('movie_list.html', movies=movies)
 
 
 # Add to Watchlist Route
