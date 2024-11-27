@@ -6,7 +6,7 @@ from .models import Watchlist, Movie, SurveyAnswer, SurveyQuestion, User
 from .api import get_film_list_by_filter
 from film_point.extensions import db
 from .forms import RegisterForm, AuthenticationForm, ForgotPasswordForm, generate_token, send_reset_email, \
-    verify_token, SurveyForm, send_confirm_email, init_serializer
+    verify_token, SurveyForm, send_confirm_email
 
 main = Blueprint('main', __name__)
 
@@ -200,23 +200,26 @@ def register():
 @main.route('/confirm/<token>')
 def confirm_email(token):
     try:
-        s = init_serializer()
-        data = s.loads(token)
-
-        user_id = data['user_id']
+        # Verify the token and get the associated user
+        user_id = verify_token(token)
         user = User.query.get(user_id)
-        print(user)
+
+        # Check if the user exists and if their email hasn't been confirmed yet
         if user and not user.is_confirmed:
             user.is_confirmed = True
             db.session.commit()
             flash('Your email has been confirmed successfully!', 'success')
+            return redirect(url_for('main.login_view'))  # Redirect to login after confirmation
         else:
             flash('Invalid or expired confirmation link.', 'error')
-    except Exception as e:
-        flash('Invalid or expired confirmation link.', 'error')
-        print(str(e))
+            return redirect(url_for('main.register'))  # Redirect back to registration if link is invalid
 
-    return render_template('confirm_email.html')
+    except Exception as e:
+        # Flash a generic error message if an exception occurs
+        flash('An error occurred while confirming your email. Please try again later.', 'error')
+        print(f"Error during email confirmation: {e}")  # Logging for debugging (use proper logging in production)
+        return redirect(url_for('main.register'))  # Redirect back to registration page on error
+
 
 
 @main.route('/login/', methods=['GET', 'POST'])

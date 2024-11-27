@@ -3,18 +3,19 @@ from .models import User
 from werkzeug.security import generate_password_hash
 from .extensions import db
 from sqlalchemy.exc import IntegrityError
-from wtforms import StringField, PasswordField, EmailField, HiddenField,IntegerField
+from wtforms import StringField, PasswordField, EmailField, HiddenField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 from flask import current_app, url_for
-from itsdangerous import URLSafeTimedSerializer
 from flask_mail import Message
 import jwt
 from datetime import datetime, timedelta
 from flask_wtf import FlaskForm
 from wtforms.widgets import HiddenInput
 
+
 class AddToWatchlistForm(FlaskForm):
     name = IntegerField(widget=HiddenInput())
+
 
 class SurveyForm(FlaskForm):
     csrf_token = HiddenField()
@@ -67,18 +68,15 @@ class RegisterForm(FlaskForm):
             raise ValueError("An error occurred while saving the user. Please try again.") from e
 
 
-def init_serializer():
-    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-
-
 def generate_token(user, secret_key):
     expiration = datetime.utcnow() + timedelta(hours=1)  # 1 hour expiry
     token = jwt.encode({'user_id': user.id, 'exp': expiration}, secret_key, algorithm='HS256')
     return token
 
-def verify_token(token, secret_key):
+
+def verify_token(token):
     try:
-        secret_key = init_serializer().loads(token)['secret_key']
+        secret_key = current_app.config['SECRET_KEY']
         payload = jwt.decode(token, secret_key, algorithms=["HS256"])
         user_id = payload["user_id"]
         return user_id
@@ -88,12 +86,12 @@ def verify_token(token, secret_key):
         return None  # Token is invalid
 
 
-
 def send_reset_email(user, token, mail):
     reset_url = url_for('main.reset_password', token=token, _external=True)
     msg = Message('Password Reset Request', sender='film_point@artify.ee', recipients=[user.email])
     msg.body = f'Click the link to reset your password: {reset_url}'
     mail.send(msg)
+
 
 def send_confirm_email(user, token, mail):
     confirm_url = url_for('main.confirm_email', token=token, _external=True)
