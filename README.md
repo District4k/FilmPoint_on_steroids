@@ -1,3 +1,15 @@
+## 🔥 What's Changed
+
+This version of **FilmPoint** is a complete upgrade over the original:
+
+- **Switched from Django to Flask** — Lightweight, API-first architecture for faster backend responses and easier scaling.
+- **Frontend rebuilt with Vue.js** — Decoupled single-page app for better UI performance and modularity.
+- **External APIs integrated** — Improved movie recommendations via third-party data sources.
+- **Dockerized everything** — Zero local setup needed. Just clone, `.env`, and `docker-compose up`.
+- **Environment variables support** — Configurable secrets and DB options through `.env`.
+- **Cleaner codebase** — Frontend and backend are separated, making it easier to maintain or extend.
+
+
 ## 🐳 Docker Setup (Recommended)
 
 ### 1. Clone the repository
